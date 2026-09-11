@@ -1,0 +1,46 @@
+# Databricks Asset Bundle — Mistplay PUBLISHED Genie Agents
+#
+# This bundle manages only PUBLISHED (production) agents — the single source of
+# truth for what is shared with the analyst audience in Genie One. Drafts are
+# created separately and freely via .github/workflows/create-genie-agent.yml
+# (no PR); an agent becomes published only when its definition is merged here and
+# deployed as the promotion service principal (see .github/workflows/deploy-genie.yml).
+
+bundle:
+  name: mistplay-genie-agents
+
+variables:
+  genie_warehouse_id:
+    description: "SQL warehouse ID that promoted Genie Agents run on"
+    # set per-target below, or override at deploy time
+  genie_parent_path:
+    description: "Workspace folder that holds promoted (production) agents"
+    default: /Workspace/Shared/genie-production
+  consumer_group:
+    description: "Account group that promoted agents are shared with (the Genie One audience)"
+    default: genie-consumers
+  automation_sp:
+    description: "Application ID of the promotion service principal (the only sanctioned publisher). Used for run_as and as the identity the reconciler treats as legitimate."
+  ops_email:
+    description: "Address notified when the share reconciler fails"
+
+include:
+  - resources/genie/*.genie_space.yml
+  - resources/*.job.yml
+
+targets:
+  prod:
+    mode: production
+    default: true
+    workspace:
+      # Mistplay production workspace host — fill in
+      host: https://YOUR-MISTPLAY-WORKSPACE.cloud.databricks.com
+      # Restricted to the deploy identity (the SP) — not world-writable:
+      root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}
+    variables:
+      genie_warehouse_id: "REPLACE_WITH_WAREHOUSE_ID"
+      automation_sp: "REPLACE_WITH_SP_APPLICATION_ID"
+      ops_email: "REPLACE_WITH_OPS_EMAIL"
+    # The identity that runs `databricks bundle deploy` (the CI service principal)
+    # becomes the owner/manager of every deployed agent, so developers cannot
+    # edit or re-share the production copy out of band.

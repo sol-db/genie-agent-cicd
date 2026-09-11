@@ -1,0 +1,8 @@
+# Promotion = a merge that changes a Genie Agent definition.
+# Every change under resources/genie/** requires review from the vetting board,
+# enforced by branch protection ("Require review from Code Owners").
+# Replace with the real GitHub team slug for the Mistplay Genie reviewers.
+
+/resources/genie/          @mistplay-data/genie-reviewers
+/databricks.yml            @mistplay-data/genie-reviewers
+/.github/                  @mistplay-data/genie-platform

@@ -1,0 +1,41 @@
+name: Genie Agents — validate & promote
+
+# PRs validate the bundle (a required status check). Merge to main deploys it to
+# production as the promotion service principal — that deploy is the "publish".
+on:
+  pull_request:
+    paths: ["resources/genie/**", "databricks.yml"]
+  push:
+    branches: [main]
+    paths: ["resources/genie/**", "databricks.yml"]
+
+# Promotion service principal (M2M OAuth). Store these as GitHub secrets.
+env:
+  DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+  DATABRICKS_CLIENT_ID: ${{ secrets.DATABRICKS_CLIENT_ID }}
+  DATABRICKS_CLIENT_SECRET: ${{ secrets.DATABRICKS_CLIENT_SECRET }}
+
+jobs:
+  validate:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: databricks/setup-cli@v0.240.0   # pin to your approved CLI version
+      - name: Validate bundle
+        run: databricks bundle validate --target prod
+      # Optional gate — fail the PR if the agent's benchmark accuracy is below bar.
+      # - name: Benchmark
+      #   run: python scripts/run_benchmark.py --target prod --min-accuracy 0.95
+
+  deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production            # add required reviewers here for a second gate
+    steps:
+      - uses: actions/checkout@v4
+      - uses: databricks/setup-cli@v0.240.0
+      - name: Deploy (publish) promoted agents
+        run: databricks bundle deploy --target prod
+      # UC data grants for the consumer group are a one-time / per-catalog setup;
+      # see sql/genie-consumers-grants.sql and the README.

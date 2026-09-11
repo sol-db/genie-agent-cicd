@@ -1,0 +1,34 @@
+{
+  "version": 2,
+  "config": {
+    "sample_questions": [
+      {"id": "10000000000000000000000000000001", "question": ["What was ARPDAU last week?"]},
+      {"id": "10000000000000000000000000000002", "question": ["Which IAP packs drove the most revenue this month?"]}
+    ]
+  },
+  "data_sources": {
+    "tables": [
+      {"identifier": "main.monetization.gold_daily_revenue"},
+      {"identifier": "main.monetization.gold_iap_transactions"}
+    ]
+  },
+  "instructions": {
+    "example_question_sqls": [
+      {
+        "id": "20000000000000000000000000000001",
+        "question": ["What was ARPDAU last week?"],
+        "sql": ["SELECT activity_date, ROUND(SUM(revenue_usd) / NULLIF(SUM(dau), 0), 4) AS arpdau FROM main.monetization.gold_daily_revenue WHERE activity_date >= date_sub(current_date(), 7) GROUP BY activity_date ORDER BY activity_date"]
+      }
+    ],
+    "text_instructions": [
+      {
+        "id": "30000000000000000000000000000001",
+        "content": [
+          "ARPDAU = total revenue_usd / DAU for the period. Use gold_daily_revenue.",
+          "'Revenue' means revenue_usd (already USD-normalized, net of store fees).",
+          "'This week' = activity_date >= date_sub(current_date(), 7)."
+        ]
+      }
+    ]
+  }
+}

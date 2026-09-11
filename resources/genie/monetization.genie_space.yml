@@ -1,0 +1,19 @@
+# One file per promoted agent: <name>.genie_space.yml + <name>.geniespace.json
+# The .geniespace.json is the exported, vetted agent definition (see README).
+resources:
+  genie_spaces:
+    monetization:
+      title: "Monetization Analytics"
+      description: "Revenue, ARPDAU, and IAP funnel questions for the Monetization domain."
+      warehouse_id: ${var.genie_warehouse_id}
+      parent_path: ${var.genie_parent_path}
+      # Serialized, vetted definition exported from the dev agent:
+      #   databricks genie get-space <DEV_SPACE_ID> --include-serialized-space \
+      #     -o json | jq '.serialized_space | fromjson' > monetization.geniespace.json
+      file_path: ./monetization.geniespace.json
+      # THIS is the "published to Genie One" control — reviewed in the PR diff:
+      permissions:
+        - level: CAN_RUN
+          group_name: ${var.consumer_group}
+      lifecycle:
+        prevent_destroy: true

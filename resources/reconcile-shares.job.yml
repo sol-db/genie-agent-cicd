@@ -1,0 +1,34 @@
+# Scheduled reconciler — the auto-unpublish control.
+# Runs as the promotion SP, enumerates Genie Agents, and revokes the analyst-audience
+# share from any agent the SP does not manage (i.e. published by someone other than
+# the SP). Deployed with the bundle; see src/reconcile_genie_shares.py.
+resources:
+  jobs:
+    reconcile_genie_shares:
+      name: "[${bundle.target}] Genie share reconciler"
+      # Runs as the SP so it has permission to read/revoke agent ACLs.
+      run_as:
+        service_principal_name: ${var.automation_sp}
+      tasks:
+        - task_key: reconcile
+          notebook_task:
+            notebook_path: ../src/reconcile_genie_shares.py
+          # No compute block → serverless.
+      parameters:
+        - name: sp_identity
+          default: ${var.automation_sp}
+        - name: consumer_group
+          default: ${var.consumer_group}
+        - name: dry_run
+          default: "true"          # flip to "false" after validating the dry-run output
+      schedule:
+        quartz_cron_expression: "0 */15 * * * ?"   # every 15 minutes
+        timezone_id: America/Toronto
+        pause_status: UNPAUSED
+      max_concurrent_runs: 1
+      email_notifications:
+        on_failure:
+          - ${var.ops_email}
+      permissions:
+        - level: CAN_VIEW
+          group_name: ${var.consumer_group}

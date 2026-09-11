@@ -1,0 +1,40 @@
+name: Create unpublished Genie Agent
+
+# The "create button" — self-service, NO pull request or approval.
+# Runs as the promotion service principal, which is why the SP (not the developer)
+# becomes CAN MANAGE owner. The developer is granted only CAN EDIT, so they can
+# build/curate and export the agent but CANNOT share/publish it. Publishing is a
+# separate, PR-gated, bundle-backed path (deploy-genie.yml).
+on:
+  workflow_dispatch:
+    inputs:
+      agent_name:
+        description: "Short name for the draft agent (used in the title)"
+        required: true
+      developer_email:
+        description: "Databricks username/email to grant CAN EDIT"
+        required: true
+      seed_table:
+        description: "Optional first table (catalog.schema.table) to seed the draft"
+        required: false
+
+env:
+  # Same promotion service principal as the publish workflow.
+  DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+  DATABRICKS_CLIENT_ID: ${{ secrets.DATABRICKS_CLIENT_ID }}
+  DATABRICKS_CLIENT_SECRET: ${{ secrets.DATABRICKS_CLIENT_SECRET }}
+  GENIE_DEV_PARENT_PATH: /Workspace/Shared/genie-dev
+  GENIE_WAREHOUSE_ID: ${{ vars.GENIE_WAREHOUSE_ID }}
+
+jobs:
+  create:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: databricks/setup-cli@v0.240.0   # pin to your approved CLI version
+      - name: Create draft agent (as SP) and grant developer CAN EDIT
+        run: bash scripts/create-unpublished-agent.sh
+        env:
+          AGENT_NAME: ${{ inputs.agent_name }}
+          DEVELOPER_EMAIL: ${{ inputs.developer_email }}
+          SEED_TABLE: ${{ inputs.seed_table }}
