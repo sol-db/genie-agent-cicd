@@ -1,4 +1,4 @@
-# Mistplay Genie Agents — create freely, publish via PR
+# Genie Agents — create freely, publish via PR
 
 **Anyone can create and build a Genie Agent. The reviewed pipeline below is the
 sanctioned way to publish one (make it usable by analysts in Genie One).** The two
@@ -25,7 +25,7 @@ the Publish deploy runs as the SP and owns the production copies.
 > pipeline. In a single workspace you **cannot prevent** that; you **detect and
 > revert** it. Enforcement therefore rests on the monitoring below, not on the
 > pipeline alone. (Hard prevention would need a dev workspace or restricting who can
-> build — see the note's "If Mistplay later wants a hard block".)
+> build — hard prevention would need a dev workspace or restricting who can build.)
 
 ## Enforcement (single workspace)
 

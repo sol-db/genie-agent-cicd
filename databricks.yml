@@ -1,4 +1,4 @@
-# Databricks Asset Bundle — Mistplay PUBLISHED Genie Agents
+# Databricks Asset Bundle — PUBLISHED Genie Agents
 #
 # This bundle manages only PUBLISHED (production) agents — the single source of
 # truth for what is shared with the analyst audience in Genie One. Drafts are
@@ -7,7 +7,7 @@
 # deployed as the promotion service principal (see .github/workflows/deploy-genie.yml).
 
 bundle:
-  name: mistplay-genie-agents
+  name: genie-agents
 
 variables:
   genie_warehouse_id:
@@ -33,8 +33,8 @@ targets:
     mode: production
     default: true
     workspace:
-      # Mistplay production workspace host — fill in
-      host: https://YOUR-MISTPLAY-WORKSPACE.cloud.databricks.com
+      # Production workspace host — fill in
+      host: https://YOUR-WORKSPACE.cloud.databricks.com
       # Restricted to the deploy identity (the SP) — not world-writable:
       root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}
     variables:
